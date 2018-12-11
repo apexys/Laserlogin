@@ -1,0 +1,229 @@
+/* Global definitions */
+
+html{
+    font-family: "Roboto", "Roboto-Webfont", sans-serif;
+}
+
+thead{
+    font-weight: bold;
+    margin-bottom: 0.6em;
+}
+
+fieldset{
+    padding-top: 0.9em;
+}
+
+table input, table form{
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+table table{
+    font-size: 80%;
+}
+
+.shrink{
+    padding: 0 0.2em;
+    display: inline;
+}
+
+input:invalid{
+    border-color: #FF4136;
+}
+
+.button.white, button.white{
+    background: white;
+    color :#111111;
+    border: 1px solid #0074D9;
+}
+
+.flex > input{
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.flex > select{
+    margin-bottom: 1em;
+}
+
+iframe{
+    border: none;
+}
+
+table #spacer{
+    background-color: transparent;
+}
+
+table.nostyle tr{
+    background-color: transparent;
+}
+
+.content-box{
+    width: 8em;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    position: relative;
+    padding: 0;
+    display: inline-block;
+}
+
+.content-bar{
+    background-color: #7FDBFF;
+    height: 1.5em;
+}
+
+.content-label{
+    width: 8em;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    line-height: 1.5em;
+}
+
+/* Fixes for picnic.css */
+
+/* Fix menu buttons aligning wrong on phones */
+@media (max-width: 60em) {
+    .menu{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .menu .button{
+        text-align: center !important;
+    }
+}       
+
+/* Fix inputs bunching up */
+input{
+    margin-top: -0.3em;
+    margin-bottom: 0.6em;
+}
+
+/* Animations */
+
+@keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+input{
+    transition: border-color 0.5s;
+}
+
+/*Fonts*/
+
+@font-face {
+    font-family: 'Raleway-Webfont';
+    src: url('font/raleway-regular-webfont.woff2') format('woff2'),
+         url('font/raleway-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Roboto-Webfont';
+    src: url('font/Roboto-Regular-webfont.eot');
+    src: url('font/Roboto-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('font/Roboto-Regular-webfont.woff') format('woff'),
+         url('font/Roboto-Regular-webfont.ttf') format('truetype'),
+         url('font/Roboto-Regular-webfont.svg#robotoregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/*From clrs.cc*/
+/* Backgrounds */
+.bg-navy { background-color: #001F3F; }
+.bg-blue { background-color: #0074D9; }
+.bg-aqua { background-color: #7FDBFF; }
+.bg-teal { background-color: #39CCCC; }
+.bg-olive { background-color: #3D9970; }
+.bg-green { background-color: #2ECC40; }
+.bg-lime { background-color: #01FF70; }
+.bg-yellow { background-color: #FFDC00; }
+.bg-orange { background-color: #FF851B; }
+.bg-red { background-color: #FF4136; }
+.bg-fuchsia { background-color: #F012BE; }
+.bg-purple { background-color: #B10DC9; }
+.bg-maroon { background-color: #85144B; }
+.bg-white { background-color: #FFFFFF; }
+.bg-gray { background-color: #AAAAAA; }
+.bg-silver { background-color: #DDDDDD; }
+.bg-black { background-color: #111111; }
+/* Colors */
+.navy { color: #001F3F; }
+.blue { color: #0074D9; }
+.aqua { color: #7FDBFF; }
+.teal { color: #39CCCC; }
+.olive { color: #3D9970; }
+.green { color: #2ECC40; }
+.lime { color: #01FF70; }
+.yellow { color: #FFDC00; }
+.orange { color: #FF851B; }
+.red { color: #FF4136; }
+.fuchsia { color: #F012BE; }
+.purple { color: #B10DC9; }
+.maroon { color: #85144B; }
+.white { color: #FFFFFF; }
+.silver { color: #DDDDDD; }
+.gray { color: #AAAAAA; }
+.black { color: #111111; }
+/* Border colors 
+
+   Use with another border utility that sets border-width and style 
+   i.e .border { border-width: 1px); border-style: solid); }     
+*/
+.border--navy { border-color: #001F3F; }
+.border--blue { border-color: #0074D9; }
+.border--aqua { border-color: #7FDBFF; }
+.border--teal { border-color: #39CCCC; }
+.border--olive { border-color: #3D9970; }
+.border--green { border-color: #2ECC40; }
+.border--lime { border-color: #01FF70; }
+.border--yellow { border-color: #FFDC00; }
+.border--orange { border-color: #FF851B; }
+.border--red { border-color: #FF4136; }
+.border--fuchsia { border-color: #F012BE; }
+.border--purple { border-color: #B10DC9; }
+.border--maroon { border-color: #85144B; }
+.border--white { border-color: #FFFFFF; }
+.border--gray { border-color: #AAAAAA; }
+.border--silver { border-color: #DDDDDD; }
+.border--black { border-color: #111111; }
+/* Fills for SVG */
+.fill-navy { fill: #001F3F; }
+.fill-blue { fill: #0074D9; }
+.fill-aqua { fill: #7FDBFF; }
+.fill-teal { fill: #39CCCC; }
+.fill-olive { fill: #3D9970; }
+.fill-green { fill: #2ECC40; }
+.fill-lime { fill: #01FF70; }
+.fill-yellow { fill: #FFDC00; }
+.fill-orange { fill: #FF851B; }
+.fill-red { fill: #FF4136; }
+.fill-fuchsia { fill: #F012BE; }
+.fill-purple { fill: #B10DC9; }
+.fill-maroon { fill: #85144B; }
+.fill-white { fill: #FFFFFF; }
+.fill-gray { fill: #AAAAAA; }
+.fill-silver { fill: #DDDDDD; }
+.fill-black { fill: #111111; }
+/* Strokes for SVG */
+.stroke-navy { stroke: #001F3F; }
+.stroke-blue { stroke: #0074D9; }
+.stroke-aqua { stroke: #7FDBFF; }
+.stroke-teal { stroke: #39CCCC; }
+.stroke-olive { stroke: #3D9970; }
+.stroke-green { stroke: #2ECC40; }
+.stroke-lime { stroke: #01FF70; }
+.stroke-yellow { stroke: #FFDC00; }
+.stroke-orange { stroke: #FF851B; }
+.stroke-red { stroke: #FF4136; }
+.stroke-fuchsia { stroke: #F012BE; }
+.stroke-purple { stroke: #B10DC9; }
+.stroke-maroon { stroke: #85144B; }
+.stroke-white { stroke: #FFFFFF; }
+.stroke-gray { stroke: #AAAAAA; }
+.stroke-silver { stroke: #DDDDDD; }
+.stroke-black { stroke: #111111; }

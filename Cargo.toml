@@ -1,0 +1,22 @@
+[package]
+name = "Laserlogin"
+version = "0.1.0"
+authors = ["Valentin Buck <ivan.v.buck@student.fh-kiel.de>"]
+
+[dependencies]
+rand = "*"
+reqwest = "*"
+rocket = "0.4"
+rocket_codegen = "0.4"
+serde = { version = "*", features = ["rc"] }
+serde_derive = "*"
+serde_json = "*"
+uuid = {version = "0.6.5", features = ["serde", "v4"]}
+simple-error = "*"
+sqlite-derive = {path = "./lib/sqlite-derive"}
+sqlite-traits = {path = "./lib/sqlite-traits"}
+chrono = {version = "*", features = ["serde"]}
+[dependencies.rocket_contrib]
+version = "*"
+default-features = false
+features = ["json", "handlebars_templates"]

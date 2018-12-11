@@ -1,0 +1,8 @@
+[package]
+name = "sqlite-traits"
+version = "0.1.0"
+authors = ["Valentin Buck <ivan.v.buck@student.fh-kiel.de>"]
+
+[dependencies]
+rusqlite = {version = "*", features = ["bundled"]}
+r2d2 = "*"

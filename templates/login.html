@@ -1,0 +1,62 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>kontor</title>
+        <link rel="stylesheet" href="static/picnic.min.css">
+        <link rel="stylesheet" href="static/global.css">
+        <script type="text/javascript">const gid = (id) => document.getElementById(id);</script>
+        <style>
+            body{
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            /*#content{
+                margin-top: -10%;
+            }*/
+            #title{
+                font-family: "Raleway", "Raleway-Webfont", "Roboto", "Roboto-Webfont", sans-serif;
+                font-weight: lighter;
+                font-size: 10vh;
+                letter-spacing: 0.2em;
+            }
+            #interact{
+                width: 33vw;
+                margin-left: 33vw;
+                font-size: 3vh;
+                animation: fadein 0.5s;
+            }
+            a{
+                float: right;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="content">
+        <div id="title" class="red">Laserlogin</div>
+        <form method="POST" action="/login">
+            <fieldset id="interact">
+                <input type="text" name="username" id="user" placeholder="Username"><br/>
+                <input type="password" name="password" id="pass" placeholder="Password"><br/>
+                <a id="login" class="button primary">Login</a>
+                <script>
+                    let lgi = () => {
+                        console.log(gid('user').value.trim());
+                        if(gid('user').value.trim().length == 0){
+                            gid('user').classList.add('border--red');
+                        }else if(gid('pass').value.trim().length == 0){
+                            gid('pass').classList.add('border--red');
+                        }else{
+                            document.forms[0].submit();
+                        }
+                    };
+                    gid('login').addEventListener('click', lgi);
+                    gid('pass').addEventListener('keydown', e => {if (e.keyCode == 13) lgi();});
+                    
+                </script>
+            </fieldset>
+        </form>
+        </div>
+    </body>
+</html>

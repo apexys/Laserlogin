@@ -1,0 +1,84 @@
+{{#*inline "page"}}
+
+      {{#*inline "usertype"}}
+        <select name="usertype" style="width: 8em;">
+        {{#if Usertype.Admin}}
+                <option>Admin</option>
+                <option>User</option>
+                <option>API</option>
+        {{else}}
+            {{#if Usertype.User}}
+                <option>User</option>
+                <option>Admin</option>
+                <option>API</option>
+            {{/if}}
+        {{/if}}
+        
+        
+        </select>
+    {{/inline}} 
+
+ <table>
+    <thead>
+        <tr>
+            <td>ID</td>
+            <td>Type</td>
+            <td>Email</td>
+            <td>Card-Hash</td>
+            <td>Current Project</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody id="rows">
+    <tr id="new-user">
+            <td></td>
+            <form method="POST" action="/admin_create_user">
+            <td>
+                {{~> usertype~}}
+            </td>
+            <td>
+                <input type="text" name="username" placeholder="new username" style="width: 8em;">
+            </td>
+            <td>
+                <input type="text" name="cardhash" placeholder="card hash" style="width: 8em;">
+            </td>
+            <td>
+                <input type="text" name="current_project" placeholder="current project" value="default project" style="width: 8em;">
+            </td>
+            <td style="text-align: right; padding-right: 0.3em;">
+                <button style="font-weight: bold; margin-right: 0; margin-left: auto;">+</button>
+            </td>
+        </form>
+        </tr>
+        {{#each users}}
+        <tr>
+            <td>{{id}}</td>
+            <td><form method="POST" action="/admin_update_usertype">
+                {{~> usertype~}}
+                <button>✔</button>
+            </form></td>
+            <td><form method="POST" action="/admin_update_username">
+                <input type="hidden" name="userid" value="{{id}}">
+                <input type="text" name="username" value="{{email}}" style="width: 8em;">
+                <button>✔</button>
+            </form></td>
+            <td colspan="2">
+                <form method="POST" action="/admin_update_card_hash">
+                <input type="hidden" name="userid" value="{{id}}">
+                <input type="text" name="cardhash" placeholder="card hash" style="width: 8em;">
+                <button>✔</button>
+                </form>
+            </td>
+             <td colspan="2">
+                <form method="POST" action="/admin_update_current_project">
+                <input type="hidden" name="userid" value="{{id}}">
+                <input type="text" name="current_project" placeholder="current project" style="width: 8em;">
+                <button>✔</button>
+                </form>
+            </td>
+        </tr>
+        {{/each}}
+    </tbody>
+</table>
+{{/inline}}
+{{~> base~}}

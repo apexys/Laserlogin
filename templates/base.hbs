@@ -1,0 +1,95 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>kontor</title>
+        <link rel="stylesheet" href="/static/picnic.min.css">
+        <link rel="stylesheet" href="/static/global.css">
+        <script type="text/javascript">const gid = (id) => document.getElementById(id); const f = (url) => fetch(url,  {credentials: 'include'});</script>
+        <style>
+            body{
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                justify-content: top;
+                margin-top: 3em;
+            }
+            .brand{
+                font-family: "Raleway", "Raleway-Webfont", "Roboto", "Roboto-Webfont", sans-serif !important;
+                font-weight: lighter;
+                letter-spacing: 0.2em;
+            }
+            #content{
+                max-width: 850px;
+                padding: 1em;
+                margin: 0 auto;
+                animation: fadein 0.5s;
+            }
+            #flash-container{
+                position: fixed;
+                top: 1em;
+                left: 0;
+                width: 100%;
+                z-index: 10001;
+                opacity: 0;
+                display: none;
+                transition: opacity 0.2s;
+            }
+            #flash{
+                max-width: 600px;
+                margin: auto;
+                z-index: 300;
+                color: white;
+            }
+            #flash .button{
+                float: right;
+                margin-top: -0.3em;
+                margin-right: -0.3em;
+            }
+            #flash span{
+                float: left;
+                margin-top: -0.3em;
+                padding: 0.3em 0;
+                font-weight: bold;
+            }
+        </style>
+    </head>
+    <body>
+        <span id="flash-container">
+            <article class="card" id="flash">
+                    <header>
+                        <span id="message">Message</span>
+                        <a class="pseudo button" onclick="gid('flash-container').style.opacity = 0; setTimeout(()=>gid('flash-container').style.display = 'none', 250);">✖</a>
+                    </header>
+            </article>
+            <script src="/static/messages.js"></script>
+        </span>
+        <nav class="demo">
+            <a href="#" class="brand">
+              <img class="logo" src="/static/bottle.png" />
+              <span class="blue">kontor</span>
+            </a>
+
+            <!-- responsive-->
+            <input id="bmenub" type="checkbox" class="show">
+            <label for="bmenub" class="burger pseudo button">&#9776;</label>
+          
+            <div class="menu">
+
+            {{#if Usertype.User}}
+                <a href="/" class="pseudo button">Overview</a>
+            {{/if}}
+            {{#if Usertype.Admin}}
+                <a href="/usersettings" class="pseudo button">User settings</a>
+            {{/if}}
+
+                <a href="/logout" class="button">Logout</a>
+
+
+            </div>
+          </nav>
+          <div id="content">
+              {{~> page}}
+          </div>
+          
+    </body>
+</html>
