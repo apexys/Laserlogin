@@ -61,7 +61,6 @@ impl User {
 }
 
 fn verify_webdav_access(email: &str, password: &str) -> bool{
-        return true;
         let client = reqwest::Client::new();
         let response = client.get("https://webdav.fh-kiel.de/transferdaten")
             .basic_auth(email, Some(password))
