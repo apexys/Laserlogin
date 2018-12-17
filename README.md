@@ -4,7 +4,7 @@ Simple program to allow multiple users to use a laser cutter in conjunction with
 Most of the hard work is already done by the script.
 
 ## Setup
-Install rust from rustup.rs and run cargo build --release in the project directory.
+Install rust nightly from rustup.rs and run cargo build --release in the project directory.
 
 Create a file called `first_user` and save your fh kiel email address into it.
 
@@ -70,7 +70,7 @@ Most POST-requests are handled this way:
     2. Request object from db, see if collision will happen
 
     3. Update object in db
-    
+
     4. Forward to appropriate view
 
 Pretty much all responses are Result-Types which will automatically return error codes if a problem occurs and also allow for use of the ?-operator.
