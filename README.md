@@ -1,4 +1,4 @@
-#Laserlogin
+# Laserlogin
 
 Simple program to allow multiple users to use a laser cutter in conjunction with a script and a raspberry pi.
 Most of the hard work is already done by the script.
