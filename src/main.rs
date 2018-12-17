@@ -273,7 +273,7 @@ fn logs(_admin: AdminUser,u: Usertype, persistance: State<Persistance>) -> Resul
 
 
 #[get("/unlock/<card_hash>")]
-fn unlock(_admin: AdminUser, card_hash: String, persistance: State<Persistance>) -> Result<String, Box<Error>>{
+fn unlock(card_hash: String, persistance: State<Persistance>) -> Result<String, Box<Error>>{
     //Store hash
     persistance.set_last_hash(card_hash.clone())?;
     if persistance.get_current_user()?.is_none() {
@@ -293,7 +293,7 @@ fn unlock(_admin: AdminUser, card_hash: String, persistance: State<Persistance>)
 }
 
 #[get("/lock")]
-fn lock(_admin: AdminUser, persistance: State<Persistance>) -> Result<String, Box<Error>>{
+fn lock(persistance: State<Persistance>) -> Result<String, Box<Error>>{
     if !persistance.get_current_user()?.is_none() {
         //Finish log entry
         let l = persistance.get_current_log()?;
