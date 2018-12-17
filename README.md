@@ -33,8 +33,11 @@ All DB data structures are defined in the folder `model` and get initialized in 
 `mod.rs` also contains a few mutexed runtime variables for keeping login tokens and the current state of the laser.
 
 User login works through three validation steps:
+
     1. Is the POST to /login well-formed HTTP?
+
     2. Can the users email address be found in the database?
+
     3. the `verify` method in `user.rs`
 
 The verify method at current sends an HTTP-GET request with the credentials the user entered to the webdav server and looks for a `200 OK` status.
@@ -50,15 +53,24 @@ Status and Login are static HTML pages.
 
 `main.rs` acts as request router.
 Most GET requests are handled this way:
+
     1. Check guards to see if user may pass
+
     2. Request data from database
+
     3. Transform data (mostly into JsonValues, sometimes happens implicitly)
+
     4. Use transformed data to render a template
 
+
 Most POST-requests are handled this way:
+
     1. Check guards
+
     2. Request object from db, see if collision will happen
+
     3. Update object in db
+    
     4. Forward to appropriate view
 
 Pretty much all responses are Result-Types which will automatically return error codes if a problem occurs and also allow for use of the ?-operator.
