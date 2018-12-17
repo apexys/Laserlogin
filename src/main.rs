@@ -2,7 +2,7 @@
 
 extern crate rand;
 #[macro_use] extern crate rocket;
-extern crate rocket_contrib;
+#[macro_use] extern crate rocket_contrib;
 use rocket_contrib::templates::Template;
 
 
@@ -15,7 +15,7 @@ extern crate sqlite_traits;
 #[macro_use] extern crate sqlite_derive;
 
 extern crate serde;
-#[macro_use] extern crate serde_json;
+ extern crate serde_json;
 use serde_json::Value;
 
 
@@ -33,7 +33,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use rocket::response::Redirect;
 use rocket::request::Form;
-use rocket_contrib::json::Json;
+use rocket_contrib::json::{JsonValue};
 use rocket::http::{Cookie, Cookies};
 use rocket::State;
 
@@ -58,11 +58,33 @@ fn favicon() -> Option<NamedFile>{
 }
 
 #[get("/")]
-fn overview(l: Usertype, persistance: State<Persistance>) ->  Result<Template, Box<Error>> {
+fn overview(_n: NormalUser,u : User, l: Usertype, persistance: State<Persistance>) ->  Result<Template, Box<Error>> {
+    let logs = Log::query(persistance.get_conn()?)
+        .Where(Log::fields().user_email, u.email.clone())
+        .OrderBy(Log::fields().timestamp_start, sqlite_traits::Ordering::Descending)
+        .all()?
+        .iter()
+        .map(|l| {
+            let tstart = Local.timestamp(l.timestamp_start,0);
+            let tdiff = Local.timestamp(l.timestamp_end, 0).signed_duration_since(tstart);
+            let tdiffstr = format!{"{:02}:{:02}:{:02}", tdiff.num_hours(), (tdiff.num_minutes() % 60), (tdiff.num_seconds() % 60)};
+            json!({
+                "date": tstart.to_rfc2822(),
+                "duration": tdiffstr,
+                "project": l.entry
+            }) 
+        })
+        .collect::<Vec<JsonValue>>();
     Ok(Template::render("overview", json!({
         "Usertype": l.to_json_object(),
+        "user": u,
+        "logs":logs
     })))
 }
+
+
+
+
 
 #[get("/static/<file..>")]
 fn files(file: PathBuf) -> Result<NamedFile, String>  {
@@ -83,6 +105,21 @@ macro_rules! set_message_and_redirect {
         $cookies.add(c);
         Ok(Redirect::to($path.to_string()))
     }};
+}
+
+#[derive(FromForm)]
+struct UserProjectUpdate{
+    userid: i32,
+    current_project: String
+}
+
+#[post("/user_update_project", data="<data>")]
+fn user_update_project(_admin: AdminUser, data: Form<UserProjectUpdate>, persistance: State<Persistance>, mut cookies: Cookies) -> Result<Redirect, Box<Error>>{
+    let mut u = User::query(persistance.get_conn()?).Where(User::fields().id, data.userid).get().ok_or(SimpleError::new("User not in db"))?;
+    u.current_project = data.current_project.clone();
+    User::update(&persistance.get_conn()?, &u)?;
+    let msg = String::from("User updated");
+    set_message_and_redirect!(msg, "/", cookies)
 }
 
 #[derive(FromForm)]
@@ -122,6 +159,7 @@ fn usersettings(_admin: AdminUser,u: Usertype, persistance: State<Persistance>) 
         "id": u.id, 
         "email": u.email, 
         "card_hash": u.card_hash,
+        "current_project": u.current_project,
         "Usertype": u.usertype.to_json_object()
     })).collect::<Value>();
     Ok(Template::render("usersettings", json!({
@@ -134,7 +172,8 @@ fn usersettings(_admin: AdminUser,u: Usertype, persistance: State<Persistance>) 
 struct UserCreation{
     usertype: String,
     email: String,
-    card_hash: String
+    card_hash: String,
+    current_project: String
 }
 
 #[post("/admin_create_user", data="<data>")]
@@ -142,7 +181,7 @@ fn admin_create_user(_admin: AdminUser, data: Form<UserCreation>, persistance: S
     let users = User::query(persistance.get_conn()?).all()?;
     if data.email.len() > 1 && users.iter().all(|ou| ou.email != data.email){
         if data.card_hash.len() > 0{
-            User::create(&persistance.get_conn()?, &mut User::new(Usertype::from_str(&data.usertype), &data.email, &data.card_hash, "Default project"))?;
+            User::create(&persistance.get_conn()?, &mut User::new(Usertype::from_str(&data.usertype), &data.email, &data.card_hash, &data.current_project))?;
             let msg = String::from("User created");
             set_message_and_redirect!(msg, "/usersettings", cookies)
         }else{
@@ -156,36 +195,121 @@ fn admin_create_user(_admin: AdminUser, data: Form<UserCreation>, persistance: S
 }
 
 #[derive(FromForm)]
-struct AdminUsernameUpdate{
+struct AdminUserUpdate{
     userid: i32,
-    email: String
+    usertype: String,
+    email: String,
+    card_hash: String,
+    current_project: String
 }
-#[post("/admin_update_user_email", data="<data>")]
-fn admin_update_username(_admin: AdminUser, data: Form<AdminUsernameUpdate>, persistance: State<Persistance>, mut cookies: Cookies) -> Result<Redirect, Box<Error>>{
+#[post("/admin_update_user", data="<data>")]
+fn admin_update_username(_admin: AdminUser, data: Form<AdminUserUpdate>, persistance: State<Persistance>, mut cookies: Cookies) -> Result<Redirect, Box<Error>>{
     let mut u = User::query(persistance.get_conn()?).Where(User::fields().id, data.userid).get().ok_or(SimpleError::new("User not in db"))?;
-    let users = User::query(persistance.get_conn()?).all()?;
-    if data.email.len() > 1 && users.iter().all(|ou| ou.email != data.email){
+    if data.card_hash.len() > 0{
+        u.usertype = Usertype::from_str(&data.usertype);
+        println!("{:?}, {:?}", u.usertype, &data.usertype);
         u.email = data.email.clone();
+        u.card_hash = data.card_hash.clone();
+        u.current_project = data.current_project.clone();
         User::update(&persistance.get_conn()?,&u)?;
-        let msg = String::from("Email changed");
+        let msg = String::from("User updated");
         set_message_and_redirect!(msg, "/usersettings", cookies)
     }else{
-        let msg = String::from("Email already registered");
+        let msg = String::from("Card hash too short");
         set_message_and_redirect!(msg, "/usersettings", cookies)
     }
 }
 
+#[derive(FromForm)]
+struct UserId{
+    userid: i32
+}
+
+#[post("/admin_delete_user", data="<data>")]
+fn admin_delete_user(_admin: AdminUser, data: Form<UserId>, persistance: State<Persistance>, mut cookies: Cookies) -> Result<Redirect, Box<Error>>{
+    let u = User::query(persistance.get_conn()?).Where(User::fields().id, data.userid).get().ok_or(SimpleError::new("User not in db"))?;
+    User::delete(&persistance.get_conn()?, &u)?;
+    let msg = String::from("User deleted");
+    set_message_and_redirect!(msg, "/usersettings", cookies)
+}
+
+
 #[get("/status")]
-fn status(_admin: AdminUser,u: Usertype, persistance: State<Persistance>) -> Result<Template, Box<Error>>{
-    Ok(Template::render("status", json!({})))
+fn status()-> Option<NamedFile> {
+    NamedFile::open(Path::new("templates/status.html")).ok()
+}
+
+#[get("/status.json")]
+fn status_json(_admin: AdminUser, persistance: State<Persistance>) -> Result<JsonValue, Box<Error>>{
+    Ok(json!({
+        "hash": persistance.get_last_hash()?,
+        "user": persistance.get_current_user()?
+    }))
 }
 
 #[get("/logs")]
 fn logs(_admin: AdminUser,u: Usertype, persistance: State<Persistance>) -> Result<Template, Box<Error>>{
-    Ok(Template::render("logs", json!({})))
+        let logs = Log::query(persistance.get_conn()?)
+        .OrderBy(Log::fields().timestamp_start, sqlite_traits::Ordering::Descending)
+        .all()?
+        .iter()
+        .map(|l| {
+            let tstart = Local.timestamp(l.timestamp_start,0);
+            let tdiff = Local.timestamp(l.timestamp_end, 0).signed_duration_since(tstart);
+            let tdiffstr = format!{"{:02}:{:02}:{:02}", tdiff.num_hours(), (tdiff.num_minutes() % 60), (tdiff.num_seconds() % 60)};
+            json!({
+                "email": l.user_email,
+                "date": tstart.to_rfc2822(),
+                "duration": tdiffstr,
+                "project": l.entry
+            }) 
+        })
+        .collect::<Vec<JsonValue>>();
+    Ok(Template::render("logs", json!({
+        "Usertype": u.to_json_object(),
+        "logs":logs
+    })))
 }
 
 
+#[get("/unlock/<card_hash>")]
+fn unlock(_admin: AdminUser, card_hash: String, persistance: State<Persistance>) -> Result<String, Box<Error>>{
+    //Store hash
+    persistance.set_last_hash(card_hash.clone())?;
+    if persistance.get_current_user()?.is_none() {
+        //Find a user with that card hash
+        let u = User::query(persistance.get_conn()?).Where(User::fields().card_hash, card_hash).get().ok_or(SimpleError::new("User not in db"))?;
+        //Create log entry
+        let mut l = Log::new(u.email.clone(), u.current_project.clone(), Local::now().timestamp(), 0);
+        //Save log entry in DB
+        Log::create(&persistance.get_conn()?, &mut l)?;
+        //Set user in persistance
+        persistance.set_current_user(Some(u))?;
+        persistance.set_current_log(Some(l))?;
+        Ok(String::from("Laser unlocked"))
+    }else{
+        Err(Box::new(SimpleError::new("Laser already in use")))
+    }
+}
+
+#[get("/lock")]
+fn lock(_admin: AdminUser, persistance: State<Persistance>) -> Result<String, Box<Error>>{
+    if !persistance.get_current_user()?.is_none() {
+        //Finish log entry
+        let l = persistance.get_current_log()?;
+        if let Some(mut log) = l{
+            log.timestamp_end = Local::now().timestamp();
+            Log::update(&persistance.get_conn()?, &log)?;
+        }
+
+        //Log out
+        persistance.set_current_log(None)?;
+        persistance.set_current_user(None)?;
+        Ok(String::from("Laser locked"))
+    }else{
+        Ok(String::from("Laser already in use"))
+    }
+}
 
 fn main() {
     rocket::ignite()
@@ -195,8 +319,9 @@ fn main() {
         login_form, overview, files, //Login, main page, static files
         clear_message, //Message clearing for the popup system
         login, logout,  //POST-Actions for login and logout
-        usersettings, admin_create_user, admin_update_username, //User-Settings-Page and associated actions
-        status, logs
+        usersettings, admin_create_user, admin_update_username, admin_delete_user, user_update_project,//User-Settings-Page and associated actions
+        status, status_json, logs,
+        lock, unlock
     ])
     .attach(Template::fairing()) //Templating-system
     //Ad-hoc fairing that forwards to login from any restricted path hit while not logged in

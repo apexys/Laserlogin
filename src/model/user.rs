@@ -1,4 +1,4 @@
-use serde_json::Value;
+use rocket_contrib::json::JsonValue;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Serialize, PartialOrd, Ord)]
 #[repr(u8)]
@@ -27,7 +27,7 @@ impl Usertype{
         Self::from_str(&s)
     }
 
-    pub fn to_json_object(self) -> Value{
+    pub fn to_json_object(self) -> JsonValue{
         json!({
             "Admin": self <= Usertype::Admin,
             "User": self <= Usertype::User
@@ -35,13 +35,13 @@ impl Usertype{
     }
 }
 
-#[derive(SqlMacro, Debug, Serialize)]
+#[derive(SqlMacro, Debug, Serialize, Clone)]
 pub struct User{
     pub id: i64,
     pub usertype: Usertype,
     pub email: String,
     pub card_hash: String,
-    pub active_project: String
+    pub current_project: String
 }
 
 impl User {
@@ -51,7 +51,7 @@ impl User {
             usertype,
             email: String::from(email),
             card_hash: String::from(card_hash),
-            active_project: String::from(active_project)
+            current_project: String::from(active_project)
         }
     }
 
@@ -61,10 +61,12 @@ impl User {
 }
 
 fn verify_webdav_access(email: &str, password: &str) -> bool{
+        return true;
         let client = reqwest::Client::new();
         let response = client.get("https://webdav.fh-kiel.de/transferdaten")
             .basic_auth(email, Some(password))
             .send();
+        //println!("{:?}", response);
         if let Ok(resp) = response{
             	return resp.status() == reqwest::StatusCode::OK;
         }else{

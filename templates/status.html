@@ -1,0 +1,113 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>kontor</title>
+        <link rel="stylesheet" href="static/picnic.min.css">
+        <link rel="stylesheet" href="static/global.css">
+        <script type="text/javascript">const gid = (id) => document.getElementById(id); const f = (url) => fetch(url,  {credentials: 'include'});</script>
+        <style>
+            body{
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            /*#content{
+                margin-top: -10%;
+            }*/
+            #title{
+                font-family: "Raleway", "Raleway-Webfont", "Roboto", "Roboto-Webfont", sans-serif;
+                font-weight: lighter;
+                font-size: 20vh;
+                letter-spacing: 0.2em;
+                transition: color 0.5s;
+            }
+            #locked, #unlocked{
+              font-size: 10vh;
+            }
+            #info{
+              font-size: 6vh;
+              color: #999;
+            }
+            #interact{
+                width: 33vw;
+                margin-left: 33vw;
+                font-size: 3vh;
+                animation: fadein 0.5s;
+            }
+            #card_hash{
+              font-family: 'Courier New', Courier, monospace;
+            }
+            a{
+                float: right;
+            }
+            #info span{
+              color: black;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="content">
+          <div id="title" class="green">Laserlogin</div>
+          <div id="locked" style="display: none;">
+              <div class="red">The laser is currently locked</div>
+              <div id="card_hash">asdf</div>
+          </div>
+          <div id="unlocked">
+              <div class="green">The laser is currently unlocked</div>
+              <div id="info">
+                User: <span id="user">...</span><br/>
+                Project: <span id="project">...</span><br/>
+                Time: <span id="uptime">0</span><br/>
+              </div>
+          </div>
+        </div>
+        <script>
+          window.ts = new Date().getTime();
+          window.logged = false;
+          window.old_hash = "";
+          function updateTS(){
+            let ts_new = new Date().getTime();
+            let s_diff = Math.floor((ts_new - window.ts) / 1000);
+            let h = Math.floor(s_diff / 3600);
+            let remainder = Math.floor(s_diff % 3600);
+            let m = Math.floor(remainder / 60);
+            remainder = Math.floor(remainder % 60);
+            let s = remainder;
+            let f = (x) => (x + '').length < 2 ? '0' + x : x + '';
+            gid('uptime').innerText = `${h}:${f(m)}:${f(s)}`;
+          }
+
+          function update(){
+            updateTS();
+            f("status.json").then(r => r.json()).then(status => {
+                if(status.user){
+                  gid("locked").style.display = "none";
+                  gid("unlocked").style.display = "block";
+                  gid("title").classList.remove("red");
+                  gid("title").classList.add("green");
+                  gid("user").innerText = status.user.email;
+                  gid("project").innerText = status.user.current_project;
+                  if(window.logged == false){
+                    window.ts = new Date().getTime();
+                    window.logged = true;
+                  }
+                }else{
+                  gid("locked").style.display = "block";
+                  gid("unlocked").style.display = "none";
+                  gid("title").classList.remove("green");
+                  gid("title").classList.add("red");
+                  if(window.old_hash != status.hash){
+                    gid("card_hash").innerText = status.hash;
+                    window.old_hash = status.hash;
+                    setTimeout(() => gid('card_hash').innerText = "",120000);
+                  }
+                  window.logged = false;
+                }
+                setTimeout(update, 1000);
+            });
+          }
+          update();
+        </script>
+    </body>
+</html>

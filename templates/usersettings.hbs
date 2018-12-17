@@ -5,12 +5,10 @@
         {{#if Usertype.Admin}}
                 <option>Admin</option>
                 <option>User</option>
-                <option>API</option>
         {{else}}
             {{#if Usertype.User}}
                 <option>User</option>
                 <option>Admin</option>
-                <option>API</option>
             {{/if}}
         {{/if}}
         
@@ -37,10 +35,10 @@
                 {{~> usertype~}}
             </td>
             <td>
-                <input type="text" name="username" placeholder="new username" style="width: 8em;">
+                <input type="text" name="email" placeholder="user email" style="width: 8em;">
             </td>
             <td>
-                <input type="text" name="cardhash" placeholder="card hash" style="width: 8em;">
+                <input type="text" name="card_hash" placeholder="card hash" style="width: 8em;">
             </td>
             <td>
                 <input type="text" name="current_project" placeholder="current project" value="default project" style="width: 8em;">
@@ -52,28 +50,28 @@
         </tr>
         {{#each users}}
         <tr>
-            <td>{{id}}</td>
-            <td><form method="POST" action="/admin_update_usertype">
+            <form method="POST" action="/admin_update_user">
+            <td>{{id}}<input type="hidden" name="userid" value="{{id}}"></td>
+            <td>
                 {{~> usertype~}}
-                <button>✔</button>
-            </form></td>
-            <td><form method="POST" action="/admin_update_username">
-                <input type="hidden" name="userid" value="{{id}}">
-                <input type="text" name="username" value="{{email}}" style="width: 8em;">
-                <button>✔</button>
-            </form></td>
-            <td colspan="2">
-                <form method="POST" action="/admin_update_card_hash">
-                <input type="hidden" name="userid" value="{{id}}">
-                <input type="text" name="cardhash" placeholder="card hash" style="width: 8em;">
-                <button>✔</button>
-                </form>
             </td>
-             <td colspan="2">
-                <form method="POST" action="/admin_update_current_project">
-                <input type="hidden" name="userid" value="{{id}}">
-                <input type="text" name="current_project" placeholder="current project" style="width: 8em;">
-                <button>✔</button>
+            <td>
+                <input type="text" name="email" value="{{email}}" style="width: 8em;">
+            </td>
+            <td>
+                <input type="text" name="card_hash" placeholder="card hash" value="{{card_hash}}" style="width: 8em;">
+            </td>
+             <td>
+                <input type="text" name="current_project" placeholder="current project" value="{{current_project}}" style="width: 8em;">
+            </td>
+             <td style="text-align: right; padding-right: 0.3em;">
+                <button style="font-weight: bold; margin-right: 0; margin-left: auto;">✔</button>
+            </td>
+            </form>
+            <td>
+                <form method="POST" action="/admin_delete_user">
+                    <input type="hidden" name="userid" value="{{id}}">
+                    <button class="bg-red" style="font-weight: bold; margin-right: 0; margin-left: auto;">✘</button>
                 </form>
             </td>
         </tr>

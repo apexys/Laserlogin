@@ -19,7 +19,6 @@
                 letter-spacing: 0.2em;
             }
             #content{
-                max-width: 850px;
                 padding: 1em;
                 margin: 0 auto;
                 animation: fadein 0.5s;
@@ -65,8 +64,7 @@
         </span>
         <nav class="demo">
             <a href="#" class="brand">
-              <img class="logo" src="/static/bottle.png" />
-              <span class="blue">kontor</span>
+              <span class="red">Laserlogin</span>
             </a>
 
             <!-- responsive-->
@@ -79,6 +77,7 @@
                 <a href="/" class="pseudo button">Overview</a>
             {{/if}}
             {{#if Usertype.Admin}}
+                <a href="/logs" class="pseudo button">Logs</a>
                 <a href="/usersettings" class="pseudo button">User settings</a>
             {{/if}}
 
