@@ -19,7 +19,7 @@ extern crate serde;
 use serde_json::Value;
 
 
-extern crate reqwest;
+//extern crate reqwest;
 
 extern crate uuid;
 
@@ -124,14 +124,13 @@ fn user_update_project(_admin: AdminUser, data: Form<UserProjectUpdate>, persist
 
 #[derive(FromForm)]
 struct LoginCredentials{
-    username: String,
-    password: String
+    username: String
 }
 
 #[post("/login", data="<creds>")]
 fn login(creds: Form<LoginCredentials>, mut cookies: Cookies, persistance: State<Persistance>) -> Result<Redirect, Box<dyn Error>>{
     eprintln!("Login called");
-    if let Ok(token) = persistance.log_in(&creds.username, &creds.password){
+    if let Ok(token) = persistance.log_in(&creds.username, &persistance.get_last_hash()?){
         cookies.add_private(Cookie::new("token", token));
     }else{
         eprintln!("Login went wrong");

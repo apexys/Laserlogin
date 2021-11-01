@@ -55,22 +55,12 @@ impl User {
         }
     }
 
-    pub fn verify(&self, password: &str) -> bool{
-        return verify_webdav_access(&self.email, password);
+    pub fn verify(&self, hash: &str) -> bool{
+        let usertype = Usertype::from_str(&self.usertype);
+        if usertype == Usertype::Admin && self.card_hash.is_empty() {
+            return true;
+        }
+        
+        self.card_hash == hash
     }
-}
-
-fn verify_webdav_access(email: &str, password: &str) -> bool{
-        /*let client = reqwest::Client::new();
-        let response = client.get("https://webdav.fh-kiel.de/transferdaten")
-            .basic_auth(email, Some(password))
-            .send();
-
-        //println!("{:?}", response);
-        if let Ok(resp) = response{
-            	return resp.status() == reqwest::StatusCode::OK;
-        }else{
-            return false;
-        }*/
-        return true
 }

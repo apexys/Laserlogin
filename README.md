@@ -3,6 +3,10 @@
 Simple program to allow multiple users to use a laser cutter in conjunction with a script and a raspberry pi.
 Most of the hard work is already done by the script.
 
+## Changes 2021-11-01
+
+Instead of requiring a password, the server now asks for the users token to be on the reader.
+
 ## Setup
 Install rust nightly from rustup.rs and run cargo build --release in the project directory.
 

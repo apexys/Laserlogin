@@ -38,21 +38,18 @@
         <form method="POST" action="/login">
             <fieldset id="interact">
                 <input type="text" name="username" id="user" placeholder="Username"><br/>
-                <input type="password" name="password" id="pass" placeholder="Password"><br/>
                 <a id="login" class="button primary">Login</a>
                 <script>
                     let lgi = () => {
                         console.log(gid('user').value.trim());
                         if(gid('user').value.trim().length == 0){
                             gid('user').classList.add('border--red');
-                        }else if(gid('pass').value.trim().length == 0){
-                            gid('pass').classList.add('border--red');
                         }else{
                             document.forms[0].submit();
                         }
                     };
                     gid('login').addEventListener('click', lgi);
-                    gid('pass').addEventListener('keydown', e => {if (e.keyCode == 13) lgi();});
+                    gid('login').addEventListener('keydown', e => {if (e.keyCode == 13) lgi();});
                     
                 </script>
             </fieldset>

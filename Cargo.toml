@@ -5,7 +5,7 @@ authors = ["Valentin Buck <ivan.v.buck@student.fh-kiel.de>"]
 
 [dependencies]
 rand = "*"
-reqwest = "*"
+#reqwest = "*" #no longer needed
 rocket = "0.4.10"
 rocket_codegen = "0.4.10"
 serde = { version = "*", features = ["rc"] }

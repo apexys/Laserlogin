@@ -106,11 +106,11 @@ impl Persistance{
         Some(self.tokens.lock().ok()?.get(token)?.0)
     }
 
-    pub fn log_in(&self, email: &str, password: &str)-> Result<String, Box<dyn Error>>{
+    pub fn log_in(&self, email: &str, last_hash: &str)-> Result<String, Box<dyn Error>>{
         match dbg!(User::query().Where("email" ,String::from(email)).get())? {
             None => bail!("Username not found"),
             Some(u) => {
-                if u.verify(password){
+                if u.verify(last_hash){
                     let token = Uuid::new_v4().hyphenated().to_string();
                     self.tokens.lock().map_err(|_| simple_error::SimpleError::new("Lock broken"))?.insert(String::from(token.as_str()), (u.id.unwrap_or(-1), Usertype::from_str(&u.usertype)));
                     Ok(token)
