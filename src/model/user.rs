@@ -1,5 +1,5 @@
 use rocket_contrib::json::JsonValue;
-
+use std::error::Error;
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash, Serialize, PartialOrd, Ord)]
 #[repr(u8)]
 pub enum Usertype{
@@ -35,10 +35,10 @@ impl Usertype{
     }
 }
 
-#[derive(SqlMacro, Debug, Serialize, Clone)]
+#[derive(SqlObject, Debug, Serialize, Clone)]
 pub struct User{
-    pub id: i64,
-    pub usertype: Usertype,
+    pub id: Option<i64>,
+    pub usertype: String,
     pub email: String,
     pub card_hash: String,
     pub current_project: String
@@ -47,8 +47,8 @@ pub struct User{
 impl User {
     pub fn new(usertype: Usertype, email: &str, card_hash: &str, active_project: &str)-> User{
         User{
-            id: -1,
-            usertype,
+            id: None,
+            usertype: usertype.to_str().to_string(),
             email: String::from(email),
             card_hash: String::from(card_hash),
             current_project: String::from(active_project)
@@ -61,14 +61,16 @@ impl User {
 }
 
 fn verify_webdav_access(email: &str, password: &str) -> bool{
-        let client = reqwest::Client::new();
+        /*let client = reqwest::Client::new();
         let response = client.get("https://webdav.fh-kiel.de/transferdaten")
             .basic_auth(email, Some(password))
             .send();
+
         //println!("{:?}", response);
         if let Ok(resp) = response{
             	return resp.status() == reqwest::StatusCode::OK;
         }else{
             return false;
-        }
+        }*/
+        return true
 }

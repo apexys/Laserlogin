@@ -43,7 +43,7 @@ use chrono::prelude::*;
 use model::Persistance;
 use model::user::{User, Usertype};
 use model::log::Log;
-use model::dbobject::DbObject;
+use model::DbObject;
 
 use std::error::Error;
 
@@ -58,10 +58,10 @@ fn favicon() -> Option<NamedFile>{
 }
 
 #[get("/")]
-fn overview(_n: NormalUser,u : User, l: Usertype, persistance: State<Persistance>) ->  Result<Template, Box<Error>> {
-    let logs = Log::query(persistance.get_conn()?)
-        .Where(Log::fields().user_email, u.email.clone())
-        .OrderBy(Log::fields().timestamp_start, sqlite_traits::Ordering::Descending)
+fn overview(_n: NormalUser,u : User, l: Usertype, persistance: State<Persistance>) ->  Result<Template, Box<dyn Error>> {
+    let logs = Log::query()
+        .Where("user_email", u.email.clone())
+        .OrderBy("timestamp_start", sqlite_traits::Ordering::Descending)
         .all()?
         .iter()
         .map(|l| {
@@ -114,10 +114,10 @@ struct UserProjectUpdate{
 }
 
 #[post("/user_update_project", data="<data>")]
-fn user_update_project(_admin: AdminUser, data: Form<UserProjectUpdate>, persistance: State<Persistance>, mut cookies: Cookies) -> Result<Redirect, Box<Error>>{
-    let mut u = User::query(persistance.get_conn()?).Where(User::fields().id, data.userid).get().ok_or(SimpleError::new("User not in db"))?;
+fn user_update_project(_admin: AdminUser, data: Form<UserProjectUpdate>, persistance: State<Persistance>, mut cookies: Cookies) -> Result<Redirect, Box<dyn Error>>{
+    let mut u = User::query().Where("id", data.userid).get()?.ok_or(SimpleError::new("User not in db"))?;
     u.current_project = data.current_project.clone();
-    User::update(&persistance.get_conn()?, &u)?;
+    u.save()?;
     let msg = String::from("User updated");
     set_message_and_redirect!(msg, "/", cookies)
 }
@@ -129,9 +129,12 @@ struct LoginCredentials{
 }
 
 #[post("/login", data="<creds>")]
-fn login(creds: Form<LoginCredentials>, mut cookies: Cookies, persistance: State<Persistance>) -> Result<Redirect, Box<Error>>{
+fn login(creds: Form<LoginCredentials>, mut cookies: Cookies, persistance: State<Persistance>) -> Result<Redirect, Box<dyn Error>>{
+    eprintln!("Login called");
     if let Ok(token) = persistance.log_in(&creds.username, &creds.password){
         cookies.add_private(Cookie::new("token", token));
+    }else{
+        eprintln!("Login went wrong");
     }
     let mut redirect_str = String::from("/");
     if let Some(redirect_to) = cookies.get("redirect_to"){
@@ -144,7 +147,7 @@ fn login(creds: Form<LoginCredentials>, mut cookies: Cookies, persistance: State
 
 
 #[get("/logout")]
-fn logout(_l: Usertype, mut cookies: Cookies, persistance: State<Persistance>) -> Result<Redirect, Box<Error>>{
+fn logout(_l: Usertype, mut cookies: Cookies, persistance: State<Persistance>) -> Result<Redirect, Box<dyn Error>>{
     if let Some(cookie) = cookies.get_private("token"){
         persistance.log_out(cookie.value())?;
         cookies.remove_private(cookie);
@@ -154,13 +157,13 @@ fn logout(_l: Usertype, mut cookies: Cookies, persistance: State<Persistance>) -
 
 
 #[get("/usersettings")]
-fn usersettings(_admin: AdminUser,u: Usertype, persistance: State<Persistance>) -> Result<Template, Box<Error>>{
-    let users = User::query(persistance.get_conn()?).all()?.iter().map(|u| json!({
+fn usersettings(_admin: AdminUser,u: Usertype, persistance: State<Persistance>) -> Result<Template, Box<dyn Error>>{
+    let users = User::query().all()?.iter().map(|u| json!({
         "id": u.id, 
         "email": u.email, 
         "card_hash": u.card_hash,
         "current_project": u.current_project,
-        "Usertype": u.usertype.to_json_object()
+        "Usertype": Usertype::from_str(&u.usertype).to_json_object()
     })).collect::<Value>();
     Ok(Template::render("usersettings", json!({
         "Usertype": u.to_json_object(),
@@ -177,11 +180,12 @@ struct UserCreation{
 }
 
 #[post("/admin_create_user", data="<data>")]
-fn admin_create_user(_admin: AdminUser, data: Form<UserCreation>, persistance: State<Persistance>, mut cookies: Cookies) -> Result<Redirect, Box<Error>>{
-    let users = User::query(persistance.get_conn()?).all()?;
+fn admin_create_user(_admin: AdminUser, data: Form<UserCreation>, persistance: State<Persistance>, mut cookies: Cookies) -> Result<Redirect, Box<dyn Error>>{
+    let users = User::query().all()?;
     if data.email.len() > 1 && users.iter().all(|ou| ou.email != data.email){
         if data.card_hash.len() > 0{
-            User::create(&persistance.get_conn()?, &mut User::new(Usertype::from_str(&data.usertype), &data.email, &data.card_hash, &data.current_project))?;
+            let mut user = User::new(Usertype::from_str(&data.usertype), &data.email, &data.card_hash, &data.current_project);
+            user.save()?;
             let msg = String::from("User created");
             set_message_and_redirect!(msg, "/usersettings", cookies)
         }else{
@@ -203,15 +207,15 @@ struct AdminUserUpdate{
     current_project: String
 }
 #[post("/admin_update_user", data="<data>")]
-fn admin_update_username(_admin: AdminUser, data: Form<AdminUserUpdate>, persistance: State<Persistance>, mut cookies: Cookies) -> Result<Redirect, Box<Error>>{
-    let mut u = User::query(persistance.get_conn()?).Where(User::fields().id, data.userid).get().ok_or(SimpleError::new("User not in db"))?;
+fn admin_update_username(_admin: AdminUser, data: Form<AdminUserUpdate>, persistance: State<Persistance>, mut cookies: Cookies) -> Result<Redirect, Box<dyn Error>>{
+    let mut u = User::query().Where("id", data.userid).get()?.ok_or(SimpleError::new("User not in db"))?;
     if data.card_hash.len() > 0{
-        u.usertype = Usertype::from_str(&data.usertype);
+        u.usertype = data.usertype.clone();
         println!("{:?}, {:?}", u.usertype, &data.usertype);
         u.email = data.email.clone();
         u.card_hash = data.card_hash.clone();
         u.current_project = data.current_project.clone();
-        User::update(&persistance.get_conn()?,&u)?;
+        u.save()?;
         let msg = String::from("User updated");
         set_message_and_redirect!(msg, "/usersettings", cookies)
     }else{
@@ -226,9 +230,9 @@ struct UserId{
 }
 
 #[post("/admin_delete_user", data="<data>")]
-fn admin_delete_user(_admin: AdminUser, data: Form<UserId>, persistance: State<Persistance>, mut cookies: Cookies) -> Result<Redirect, Box<Error>>{
-    let u = User::query(persistance.get_conn()?).Where(User::fields().id, data.userid).get().ok_or(SimpleError::new("User not in db"))?;
-    User::delete(&persistance.get_conn()?, &u)?;
+fn admin_delete_user(_admin: AdminUser, data: Form<UserId>, persistance: State<Persistance>, mut cookies: Cookies) -> Result<Redirect, Box<dyn Error>>{
+    let mut u = User::query().Where("id", data.userid).get()?.ok_or(SimpleError::new("User not in db"))?;
+    u.delete()?;
     let msg = String::from("User deleted");
     set_message_and_redirect!(msg, "/usersettings", cookies)
 }
@@ -240,7 +244,7 @@ fn status()-> Option<NamedFile> {
 }
 
 #[get("/status.json")]
-fn status_json(_admin: AdminUser, persistance: State<Persistance>) -> Result<JsonValue, Box<Error>>{
+fn status_json(_admin: AdminUser, persistance: State<Persistance>) -> Result<JsonValue, Box<dyn Error>>{
     Ok(json!({
         "hash": persistance.get_last_hash()?,
         "user": persistance.get_current_user()?
@@ -248,9 +252,9 @@ fn status_json(_admin: AdminUser, persistance: State<Persistance>) -> Result<Jso
 }
 
 #[get("/logs")]
-fn logs(_admin: AdminUser,u: Usertype, persistance: State<Persistance>) -> Result<Template, Box<Error>>{
-        let logs = Log::query(persistance.get_conn()?)
-        .OrderBy(Log::fields().timestamp_start, sqlite_traits::Ordering::Descending)
+fn logs(_admin: AdminUser,u: Usertype, persistance: State<Persistance>) -> Result<Template, Box<dyn Error>>{
+        let logs = Log::query()
+        .OrderBy("timestamp_start", sqlite_traits::Ordering::Descending)
         .all()?
         .iter()
         .map(|l| {
@@ -273,16 +277,16 @@ fn logs(_admin: AdminUser,u: Usertype, persistance: State<Persistance>) -> Resul
 
 
 #[get("/unlock/<card_hash>")]
-fn unlock(card_hash: String, persistance: State<Persistance>) -> Result<String, Box<Error>>{
+fn unlock(card_hash: String, persistance: State<Persistance>) -> Result<String, Box<dyn Error>>{
     //Store hash
     persistance.set_last_hash(card_hash.clone())?;
     if persistance.get_current_user()?.is_none() {
         //Find a user with that card hash
-        let u = User::query(persistance.get_conn()?).Where(User::fields().card_hash, card_hash).get().ok_or(SimpleError::new("User not in db"))?;
+        let u = User::query().Where("card_hash", card_hash).get()?.ok_or(SimpleError::new("User not in db"))?;
         //Create log entry
         let mut l = Log::new(u.email.clone(), u.current_project.clone(), Local::now().timestamp(), 0);
         //Save log entry in DB
-        Log::create(&persistance.get_conn()?, &mut l)?;
+        l.save();
         //Set user in persistance
         persistance.set_current_user(Some(u))?;
         persistance.set_current_log(Some(l))?;
@@ -293,13 +297,13 @@ fn unlock(card_hash: String, persistance: State<Persistance>) -> Result<String, 
 }
 
 #[get("/lock")]
-fn lock(persistance: State<Persistance>) -> Result<String, Box<Error>>{
+fn lock(persistance: State<Persistance>) -> Result<String, Box<dyn Error>>{
     if !persistance.get_current_user()?.is_none() {
         //Finish log entry
         let l = persistance.get_current_log()?;
         if let Some(mut log) = l{
             log.timestamp_end = Local::now().timestamp();
-            Log::update(&persistance.get_conn()?, &log)?;
+            log.save()?;
         }
 
         //Log out

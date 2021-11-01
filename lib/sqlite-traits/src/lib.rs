@@ -1,28 +1,19 @@
-extern crate r2d2;
-extern crate rusqlite;
-mod pool;
-pub mod dbobject;
-use self::pool::SqliteConnectionManager;
-use std::error::Error;
-use std::path::Path;
+mod persistence_provider;
 
-pub use dbobject::Ordering;
+pub use persistence_provider::{Persistence, PersistenceConnection};
 
-pub type DbConnection = r2d2::PooledConnection<SqliteConnectionManager>;
-pub type ToSql = rusqlite::types::ToSql;
+mod db_object;
+mod sql_object;
 
-pub struct Persistance{
-    connection_pool: r2d2::Pool<SqliteConnectionManager>,
-}
+pub use db_object::DbObject;
+pub use sql_object::SqlObject;
 
-impl Persistance{
-    pub fn new(db_path: &Path) -> Self{
-        Persistance{
-            connection_pool: r2d2::Pool::builder().build(SqliteConnectionManager::file(db_path)).unwrap(),
-        }      
-    }
+mod query;
 
-    pub fn get_conn(&self) ->  Result<DbConnection, Box<Error>>{
-        Ok(self.connection_pool.get()?)
-    }
-}
+pub use query::{Ordering, Query};
+
+mod sql_types;
+
+pub use sql_types::{SqlType, SqlTyped};
+
+pub use rusqlite::{ToSql, Row};

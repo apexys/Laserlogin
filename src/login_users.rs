@@ -3,7 +3,7 @@ use rocket::request::Request;
 use rocket::request;
 use rocket::outcome::Outcome::{Success, Forward};
 use model::user::{User, Usertype};
-use sqlite_traits::dbobject::DbObject;
+use sqlite_traits::DbObject;
 use rocket::State;
 use model::Persistance;
 use rocket::fairing::AdHoc;
@@ -74,11 +74,9 @@ impl<'a, 'r> FromRequest<'a, 'r> for User{
         if let Some(cookie) = request.cookies().get_private("token"){
             let p =request.guard::<State<Persistance>>()?;
             if let Some(id) = p.get_user_id(cookie.value()){
-                if let Ok(conn) = p.get_conn() {
-                    if let Some(user) = User::query(conn).Where(User::fields().id, id).get(){
+                    if let Ok(Some(user)) = User::query().Where("id", id).get(){
                         return Success(user)
                     }
-                }
                     Forward(())
             }else{
                 Forward(())

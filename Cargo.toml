@@ -6,8 +6,8 @@ authors = ["Valentin Buck <ivan.v.buck@student.fh-kiel.de>"]
 [dependencies]
 rand = "*"
 reqwest = "*"
-rocket = "0.4"
-rocket_codegen = "0.4"
+rocket = "0.4.10"
+rocket_codegen = "0.4.10"
 serde = { version = "*", features = ["rc"] }
 serde_derive = "*"
 serde_json = "*"

@@ -1,6 +1,7 @@
-#[derive(SqlMacro)]
+use std::error::Error;
+#[derive(SqlObject)]
 pub struct Config{
-    pub id: i64,
+    pub id: Option<i64>,
     pub name: String,
     pub value: String
 }
@@ -8,7 +9,7 @@ pub struct Config{
 impl Config{
     pub fn new(name: &'static str, value: &str) -> Self{
         Config{
-            id: -1,
+            id: None,
             name: String::from(name),
             value: String::from(value)
         }

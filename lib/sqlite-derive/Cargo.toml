@@ -1,13 +1,13 @@
 [package]
 name = "sqlite-derive"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Valentin Buck <ivan.v.buck@student.fh-kiel.de>"]
+edition = "2018"
 
 [lib]
 proc-macro = true
 
 [dependencies]
-syn = {version= "^0.14", features = ["parsing"]}
-quote = "*"
-rusqlite = {version = "*", features = ["bundled"]}
-proc-macro2 = "0.4"
+syn = "1.0"
+quote = "1.0"
+proc-macro2 = "1.0"
